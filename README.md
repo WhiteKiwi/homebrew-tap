@@ -1,16 +1,22 @@
 # Whitekiwi Tap
 
-## How do I install these formulae?
+Personal Homebrew tap for WhiteKiwi formulae.
 
-`brew install whitekiwi/tap/<formula>`
+## Available Formulae
 
-Or `brew tap whitekiwi/tap` and then `brew install <formula>`.
+- **[locron](https://github.com/WhiteKiwi/locron)**: Local-first job scheduler for macOS and Linux.
 
-Or, in a `brew bundle` `Brewfile`:
+## Installation
 
-```ruby
-tap "whitekiwi/tap"
-brew "<formula>"
+```sh
+brew tap whitekiwi/tap
+brew install locron
+```
+
+Or install directly:
+
+```sh
+brew install whitekiwi/tap/locron
 ```
 
 ## Documentation
