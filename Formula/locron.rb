@@ -1,26 +1,26 @@
 class Locron < Formula
   desc "Local-first job scheduler for macOS and Linux"
   homepage "https://github.com/WhiteKiwi/locron"
-  version "0.3.1"
+  version "0.4.0"
   license any_of: ["MIT", "Apache-2.0"]
 
   on_macos do
     if Hardware::CPU.arm?
       url "https://github.com/WhiteKiwi/locron/releases/download/v#{version}/locron-v#{version}-aarch64-apple-darwin.tar.gz"
-      sha256 "055d91e91c47dd2739eeac9952dee0b0c5e507830a4d2bc00885addebe508e1e"
+      sha256 "c0c0c292853e282c77c26f066537f51a7dcb9d5c2e170c0fb42bdfcc3e0f2023"
     else
       url "https://github.com/WhiteKiwi/locron/releases/download/v#{version}/locron-v#{version}-x86_64-apple-darwin.tar.gz"
-      sha256 "ac84b8c7dfcc3993b88c318ae44f6e6292f14d25614fc34e4fa5faf4710ffb73"
+      sha256 "d3543fe8b46269c9ea0a3674e73970af8fc78d3bba3c4713836a8e2e05c2df89"
     end
   end
 
   on_linux do
     if Hardware::CPU.arm?
       url "https://github.com/WhiteKiwi/locron/releases/download/v#{version}/locron-v#{version}-aarch64-unknown-linux-gnu.tar.gz"
-      sha256 "768a9e8b4bf6ec38b6b1b2ea74035a555d081d3de05e597671925ac2ab9a4ac5"
+      sha256 "85a9f86cbc3eb454c9cf8029b44676debcd1f69520f8dd51a6d9beaf770b3abe"
     else
       url "https://github.com/WhiteKiwi/locron/releases/download/v#{version}/locron-v#{version}-x86_64-unknown-linux-gnu.tar.gz"
-      sha256 "ae5fdfc784d54288b0ed734d966bd2a9aad15d2905c30e6d5aca2e9207dd7059"
+      sha256 "a75407e46138442e11d855c83b703509af433470ec930772991d2986aeb03f45"
     end
   end
 
