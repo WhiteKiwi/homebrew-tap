@@ -27,8 +27,8 @@ class Locron < Formula
   def install
     bin.install "locron"
     # Mark this install as package-manager-managed so that
-    #  refuses to replace the binary and
-    # directs users to .
+    # `locron self-update` refuses to replace the binary and
+    # directs users to `brew upgrade locron`.
     lib.mkpath
     FileUtils.touch lib/".disable-self-update"
   end
@@ -43,9 +43,9 @@ class Locron < Formula
     <<~EOS
       Start the locron daemon with:
         brew services start locron
-      Installation never starts it automatically, and 
+      Installation never starts it automatically, and `brew upgrade`
       leaves a running service on the old version; run
-       after an upgrade.
+      `brew services restart locron` after an upgrade.
     EOS
   end
 
