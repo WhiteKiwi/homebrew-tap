@@ -10,13 +10,14 @@ Personal Homebrew tap for WhiteKiwi formulae.
 
 ```sh
 brew tap whitekiwi/tap
+brew trust whitekiwi/tap   # newer Homebrew requires trusting third-party taps
 brew install locron
 ```
 
 Or install directly:
 
 ```sh
-brew install whitekiwi/tap/locron
+brew tap whitekiwi/tap && brew trust whitekiwi/tap && brew install locron
 ```
 
 ## Documentation
