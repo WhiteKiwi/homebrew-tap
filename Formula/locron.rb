@@ -1,7 +1,6 @@
 class Locron < Formula
   desc "Local-first job scheduler for macOS and Linux"
   homepage "https://github.com/WhiteKiwi/locron"
-  version "0.5.0"
   license any_of: ["MIT", "Apache-2.0"]
 
   on_macos do
@@ -30,7 +29,7 @@ class Locron < Formula
     # `locron self-update` refuses to replace the binary and
     # directs users to `brew upgrade locron`.
     lib.mkpath
-    FileUtils.touch lib/".disable-self-update"
+    touch lib/".disable-self-update"
   end
 
   service do
