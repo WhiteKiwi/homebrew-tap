@@ -5,21 +5,21 @@ class Pushman < Formula
 
   on_macos do
     if Hardware::CPU.arm?
-      url "https://github.com/WhiteKiwi/pushman-cli/releases/download/v0.1.0-beta.3/pushman_0.1.0-beta.3_macOS_arm64.tar.gz"
-      sha256 "2d0cc755b4dca8c2a6f101c40f5c23da98d64adbd18b4c157caa8b33ea1713f6"
+      url "https://github.com/WhiteKiwi/pushman-cli/releases/download/v0.1.0-beta.4/pushman_0.1.0-beta.4_macOS_arm64.tar.gz"
+      sha256 "f02e2b439bd6aa4f1bcd4835cb4b4ec0e7ae5c3c9a9d6034a0c3fc36e96ba7fa"
     else
-      url "https://github.com/WhiteKiwi/pushman-cli/releases/download/v0.1.0-beta.3/pushman_0.1.0-beta.3_macOS_x86_64.tar.gz"
-      sha256 "80f8f758a5130aaa4bffbb609b028ef407f35fa034461698509ea66985498200"
+      url "https://github.com/WhiteKiwi/pushman-cli/releases/download/v0.1.0-beta.4/pushman_0.1.0-beta.4_macOS_x86_64.tar.gz"
+      sha256 "73251b6f952c9aca6fea6dfbcf8779697833797648e1d54284427db5f94e4c40"
     end
   end
 
   on_linux do
     if Hardware::CPU.arm?
-      url "https://github.com/WhiteKiwi/pushman-cli/releases/download/v0.1.0-beta.3/pushman_0.1.0-beta.3_linux_arm64.tar.gz"
-      sha256 "21b93372a6a06a6d8b7cc5fcfe16302f1cc0bc26a95c1b6a5cdee6966d1face7"
+      url "https://github.com/WhiteKiwi/pushman-cli/releases/download/v0.1.0-beta.4/pushman_0.1.0-beta.4_linux_arm64.tar.gz"
+      sha256 "ed6e83ef89aa19d97091859fe9c4b6fe7f61e9e592e58030f7b654d5a0c5fa59"
     else
-      url "https://github.com/WhiteKiwi/pushman-cli/releases/download/v0.1.0-beta.3/pushman_0.1.0-beta.3_linux_x86_64.tar.gz"
-      sha256 "04639c6d04f1adbc66494182939cd590def4e1acb92fc0735e13529e116e3436"
+      url "https://github.com/WhiteKiwi/pushman-cli/releases/download/v0.1.0-beta.4/pushman_0.1.0-beta.4_linux_x86_64.tar.gz"
+      sha256 "0f6ce96813e4ff55b7d65575f7dd2f4f517e831b694ca88780f26576e8761c95"
     end
   end
 
