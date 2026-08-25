@@ -1,7 +1,7 @@
 <h1 align="center">whitekiwi/tap</h1>
 
 <p align="center">
-  <strong>Personal Homebrew tap for <a href="https://github.com/WhiteKiwi/locron">locron</a>.</strong>
+  <strong>Homebrew packages for WhiteKiwi command-line tools.</strong>
 </p>
 
 <p align="center">
@@ -13,23 +13,27 @@
 
 ## Install
 
+Install a fully qualified Formula directly. Homebrew adds the tap automatically and trusts only the selected Formula:
+
 ```sh
-brew tap whitekiwi/tap && brew trust whitekiwi/tap && brew install locron
+brew install whitekiwi/tap/pushman
+brew install whitekiwi/tap/locron
 ```
 
-Newer Homebrew requires `brew trust` for third-party taps. After tapping once, installs and upgrades work like any other formula: `brew install locron`, `brew upgrade locron`, `brew uninstall locron`.
+After installation, upgrades and removal work by short name: `brew upgrade pushman`, `brew uninstall pushman`, `brew upgrade locron`, and `brew uninstall locron`. Trust the whole tap only if you explicitly accept every current and future package in it.
 
 ## Formulae
 
 | Formula | Description | Upstream |
 | --- | --- | --- |
+| [pushman](Formula/pushman.rb) | Send push notifications to your iPhone from the command line | [WhiteKiwi/pushman-cli](https://github.com/WhiteKiwi/pushman-cli) |
 | [locron](Formula/locron.rb) | Local-first job scheduler for macOS and Linux | [WhiteKiwi/locron](https://github.com/WhiteKiwi/locron) |
 
 ## Maintenance
 
 This tap is kept current automatically and needs no manual version bumps:
 
-- **Release pipeline** — every `locron` release pushes an updated `Formula/locron.rb` with the new version and checksums for all four platform builds (macOS and Linux, x86_64 and aarch64).
+- **Release pipelines** — every Pushman CLI and locron release pushes its reviewed Formula with the new version and checksums for all four platform builds (macOS and Linux, x86_64 and arm64).
 - **Autobump** — a [daily workflow](.github/workflows/autobump.yml) runs `brew bump` with `livecheck` against GitHub Releases and opens a pull request if a version falls behind.
 - **Test bot** — every push and pull request runs `brew test-bot` on macOS and Linux.
 
@@ -39,7 +43,9 @@ Contributions are welcome — open a pull request and the [test bot](.github/wor
 
 ```sh
 brew install whitekiwi/tap/locron
+brew install whitekiwi/tap/pushman
 brew test whitekiwi/tap/locron
+brew test whitekiwi/tap/pushman
 brew audit --tap=whitekiwi/tap
 ```
 
@@ -47,6 +53,7 @@ brew audit --tap=whitekiwi/tap
 
 - [`brew tap`](https://docs.brew.sh/Taps) — how third-party taps work.
 - [Formula Cookbook](https://docs.brew.sh/Formula-Cookbook) — Homebrew's reference for writing and testing formulae.
+- [Pushman CLI documentation](https://github.com/WhiteKiwi/pushman-cli#readme) — pairing, push commands, automation, and security.
 - [locron documentation](https://github.com/WhiteKiwi/locron#-documentation) — operator guide, CLI reference, and release policy.
 
 ## License
@@ -56,4 +63,4 @@ Formula metadata in this repository is dual-licensed under either of:
 - MIT License ([`LICENSE`](LICENSE))
 - Apache License, Version 2.0 ([https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0))
 
-at your option. `locron` itself is distributed under the same terms.
+at your option. Each upstream project is distributed under the license declared by its own repository.
