@@ -26,7 +26,7 @@ After installation, upgrades and removal work by short name: `brew upgrade pushm
 
 | Formula | Description | Upstream |
 | --- | --- | --- |
-| [pushman](Formula/pushman.rb) | Send push notifications to your iPhone from the command line | [WhiteKiwi/pushman-cli](https://github.com/WhiteKiwi/pushman-cli) |
+| [pushman](Formula/pushman.rb) | Send push notifications to your iPhone from the command line | [pushmanhq/pushman-cli](https://github.com/pushmanhq/pushman-cli) |
 | [locron](Formula/locron.rb) | Local-first job scheduler for macOS and Linux | [WhiteKiwi/locron](https://github.com/WhiteKiwi/locron) |
 
 ## Maintenance
@@ -53,7 +53,7 @@ brew audit --tap=whitekiwi/tap
 
 - [`brew tap`](https://docs.brew.sh/Taps) — how third-party taps work.
 - [Formula Cookbook](https://docs.brew.sh/Formula-Cookbook) — Homebrew's reference for writing and testing formulae.
-- [Pushman CLI documentation](https://github.com/WhiteKiwi/pushman-cli#readme) — pairing, push commands, automation, and security.
+- [Pushman CLI documentation](https://github.com/pushmanhq/pushman-cli#readme) — pairing, push commands, automation, and security.
 - [locron documentation](https://github.com/WhiteKiwi/locron#-documentation) — operator guide, CLI reference, and release policy.
 
 ## License
