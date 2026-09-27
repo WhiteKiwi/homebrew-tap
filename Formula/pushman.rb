@@ -5,21 +5,21 @@ class Pushman < Formula
 
   on_macos do
     if Hardware::CPU.arm?
-      url "https://github.com/pushmanhq/pushman-cli/releases/download/v0.1.1/pushman_0.1.1_macOS_arm64.tar.gz"
-      sha256 "78cb661e3f5d1d847ea63bc6279dcb1207a121cd75991441e89261edbcac36a2"
+      url "https://github.com/pushmanhq/pushman-cli/releases/download/v0.3.0/pushman_0.3.0_macOS_arm64.tar.gz"
+      sha256 "0655b3acbe1ace7c7ba3d44b7945fa9611f79776d7eb27efa17628b3cb9d4c18"
     else
-      url "https://github.com/pushmanhq/pushman-cli/releases/download/v0.1.1/pushman_0.1.1_macOS_x86_64.tar.gz"
-      sha256 "6a8927a98c5b783814ae87f0457620cd0da71b014ca2057269ba16db4cc673ea"
+      url "https://github.com/pushmanhq/pushman-cli/releases/download/v0.3.0/pushman_0.3.0_macOS_x86_64.tar.gz"
+      sha256 "24f61d06abf517b75a34a30930946ac10ac614da3ee09354f52adff8ed011e2a"
     end
   end
 
   on_linux do
     if Hardware::CPU.arm?
-      url "https://github.com/pushmanhq/pushman-cli/releases/download/v0.1.1/pushman_0.1.1_linux_arm64.tar.gz"
-      sha256 "16333977d6bfa90e718071d3f65642791820790c3ba283569caff9e0c0db546d"
+      url "https://github.com/pushmanhq/pushman-cli/releases/download/v0.3.0/pushman_0.3.0_linux_arm64.tar.gz"
+      sha256 "bfac36a1bad87f3da174c3a09cacfb1b20c65419cf90024f5d34d5a5cecc822d"
     else
-      url "https://github.com/pushmanhq/pushman-cli/releases/download/v0.1.1/pushman_0.1.1_linux_x86_64.tar.gz"
-      sha256 "4afa3fa2f231e26fe09a9c37fcef173a850ed75db2c4ef9053f9a2b83d5cf2fe"
+      url "https://github.com/pushmanhq/pushman-cli/releases/download/v0.3.0/pushman_0.3.0_linux_x86_64.tar.gz"
+      sha256 "dacb56708f2ec4ed71b21510530bbf5703171b8437649ae29fd9553e83d66e61"
     end
   end
 
