@@ -5,21 +5,21 @@ class Locron < Formula
 
   on_macos do
     if Hardware::CPU.arm?
-      url "https://github.com/WhiteKiwi/locron/releases/download/v0.9.4/locron-v0.9.4-aarch64-apple-darwin.tar.gz"
-      sha256 "91e3927e3b140714277c7ea9a4925b59bef40954094f7ce48f19c6e47857091f"
+      url "https://github.com/WhiteKiwi/locron/releases/download/v0.9.5/locron-v0.9.5-aarch64-apple-darwin.tar.gz"
+      sha256 "9dd045b2ced1e5d72ac6e9f5d33901fbaf4fca34aca01b88ad8aeded60533fb8"
     else
-      url "https://github.com/WhiteKiwi/locron/releases/download/v0.9.4/locron-v0.9.4-x86_64-apple-darwin.tar.gz"
-      sha256 "0081a0d0bafdb7a70ecf1a256f9298abaaf4b5c064d09d9340e6eedef06dae00"
+      url "https://github.com/WhiteKiwi/locron/releases/download/v0.9.5/locron-v0.9.5-x86_64-apple-darwin.tar.gz"
+      sha256 "5f7f79c587dd860931fa1bdd5d0e849396df2614071db077e0e4f384eaefc56d"
     end
   end
 
   on_linux do
     if Hardware::CPU.arm?
-      url "https://github.com/WhiteKiwi/locron/releases/download/v0.9.4/locron-v0.9.4-aarch64-unknown-linux-gnu.tar.gz"
-      sha256 "4ef05f398d4298df422cb11dfebb4efe5facab53e280afba1798716f2ac83c98"
+      url "https://github.com/WhiteKiwi/locron/releases/download/v0.9.5/locron-v0.9.5-aarch64-unknown-linux-gnu.tar.gz"
+      sha256 "d4871ff5979f6129da8edf1f67399d2b7103ade77e4ece808152440887bc2ec4"
     else
-      url "https://github.com/WhiteKiwi/locron/releases/download/v0.9.4/locron-v0.9.4-x86_64-unknown-linux-gnu.tar.gz"
-      sha256 "1c2a6d0cba15c7121738dbb467073628e39197941ae278e3347cc463307bb050"
+      url "https://github.com/WhiteKiwi/locron/releases/download/v0.9.5/locron-v0.9.5-x86_64-unknown-linux-gnu.tar.gz"
+      sha256 "31cef4433d750d5f711cc6315fea9382a9a97f8d0f374d44463ac473008af82a"
     end
   end
 
