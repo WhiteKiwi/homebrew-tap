@@ -7,11 +7,17 @@ on:
       - main
     paths:
       - .github/workflows/autobump.yml
+      - scripts/update_loboot.py
+  workflow_dispatch:
   schedule:
     # Every day at 3:15 UTC
     - cron: 15 3 * * *
 
 permissions: {}
+
+concurrency:
+  group: tap-autobump
+  cancel-in-progress: false
 
 defaults:
   run:
@@ -19,6 +25,7 @@ defaults:
 
 jobs:
   autobump:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -39,3 +46,98 @@ jobs:
           HOMEBREW_GIT_COMMITTER_EMAIL: ${{ steps.git_setup.outputs.email }}
           TAP_NAME: ${{ steps.set-up-homebrew.outputs.tap-name }}
         run: brew bump --no-fork --open-pr --formulae --bump-synced --tap="$TAP_NAME"
+
+  prepare-loboot:
+    name: Verify Loboot release assets
+    if: github.ref == 'refs/heads/main'
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      changed: ${{ steps.stage.outputs.changed }}
+      tag: ${{ steps.stage.outputs.tag }}
+      previous_sha256: ${{ steps.stage.outputs.previous_sha256 }}
+      candidate_sha256: ${{ steps.stage.outputs.candidate_sha256 }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - run: python3 -m unittest discover -s tests -v
+      - name: Verify every published archive and stage the reviewed formula
+        id: stage
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 scripts/update_loboot.py --output staged/loboot.rb --github-output "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        if: steps.stage.outputs.changed == 'true'
+        with:
+          name: verified-loboot-formula
+          path: staged/loboot.rb
+          if-no-files-found: error
+
+  test-loboot:
+    name: Test Loboot update (${{ matrix.os }})
+    timeout-minutes: 30
+    needs: prepare-loboot
+    if: needs.prepare-loboot.outputs.changed == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-26, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+    steps:
+      - uses: Homebrew/actions/setup-homebrew@8f3d1ec8a696b3b9d9a6c3696b6c73033cab69e4 # 2026.08.14.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          name: verified-loboot-formula
+          path: ${{ runner.temp }}/verified-loboot
+      - name: Install, test, and audit the candidate before publishing
+        env:
+          CANDIDATE: ${{ runner.temp }}/verified-loboot/loboot.rb
+          CANDIDATE_SHA256: ${{ needs.prepare-loboot.outputs.candidate_sha256 }}
+          HOMEBREW_NO_AUTO_UPDATE: 1
+        run: |
+          printf '%s  %s\n' "$CANDIDATE_SHA256" "$CANDIDATE" | shasum -a 256 --check
+          cp "$CANDIDATE" "$(brew --repository whitekiwi/tap)/Formula/loboot.rb"
+          brew install --formula whitekiwi/tap/loboot
+          brew test whitekiwi/tap/loboot
+          brew audit --strict whitekiwi/tap/loboot
+          brew style whitekiwi/tap/loboot
+
+  publish-loboot:
+    name: Publish tested Loboot update
+    timeout-minutes: 5
+    needs: [prepare-loboot, test-loboot]
+    if: github.ref == 'refs/heads/main' && needs.prepare-loboot.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: main
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          name: verified-loboot-formula
+          path: ${{ runner.temp }}/verified-loboot
+      - name: Commit only the tested formula without overwriting concurrent edits
+        env:
+          CANDIDATE: ${{ runner.temp }}/verified-loboot/loboot.rb
+          CANDIDATE_SHA256: ${{ needs.prepare-loboot.outputs.candidate_sha256 }}
+          PREVIOUS_SHA256: ${{ needs.prepare-loboot.outputs.previous_sha256 }}
+          RELEASE_TAG: ${{ needs.prepare-loboot.outputs.tag }}
+        run: |
+          printf '%s  Formula/loboot.rb\n' "$PREVIOUS_SHA256" | sha256sum --check --strict
+          printf '%s  %s\n' "$CANDIDATE_SHA256" "$CANDIDATE" | sha256sum --check --strict
+          cp "$CANDIDATE" Formula/loboot.rb
+          git diff --check
+          git add -- Formula/loboot.rb
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+            commit -m "bump: update loboot to ${RELEASE_TAG#v}"
+          git push origin HEAD:main
+          printf 'Published Loboot %s after archive verification and macOS/Linux Homebrew tests.\n' "$RELEASE_TAG" >> "$GITHUB_STEP_SUMMARY"
