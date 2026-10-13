@@ -56,6 +56,14 @@ class UpdateLobootTests(unittest.TestCase):
             for url in (updater.URL_ROOT + "/v0.1.0/loboot.rb", "https://example.com/", updater.LATEST_API + "?redirect=1"):
                 self.assertNotIn("Authorization", updater.request_headers(url))
 
+    def test_api_token_is_not_forwarded_on_redirect(self):
+        with patch.dict("os.environ", {"GITHUB_TOKEN": "fixture-token"}):
+            request = updater.make_request(updater.LATEST_API)
+            self.assertEqual(request.get_header("Authorization"), "Bearer fixture-token")
+            redirected = updater.urllib.request.HTTPRedirectHandler().redirect_request(
+                request, None, 302, "Moved", {}, "https://example.com/redirect")
+            self.assertIsNone(redirected.get_header("Authorization"))
+
     def test_anonymous_lookup_remains_available(self):
         with patch.dict("os.environ", {}, clear=True):
             self.assertNotIn("Authorization", updater.request_headers(updater.LATEST_API))

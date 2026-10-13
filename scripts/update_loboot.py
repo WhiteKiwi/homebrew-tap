@@ -37,8 +37,18 @@ def request_headers(url):
     return headers
 
 
+def make_request(url):
+    headers = request_headers(url)
+    authorization = headers.pop("Authorization", None)
+    request = urllib.request.Request(url, headers=headers)
+    if authorization:
+        # urllib must not copy even this read-scoped token to a redirect target.
+        request.add_unredirected_header("Authorization", authorization)
+    return request
+
+
 def fetch(url, limit):
-    request = urllib.request.Request(url, headers=request_headers(url))
+    request = make_request(url)
     with urllib.request.urlopen(request, timeout=120) as response:
         data = response.read(limit + 1)
     if len(data) > limit:
