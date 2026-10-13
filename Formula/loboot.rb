@@ -2,7 +2,6 @@
 class Loboot < Formula
   desc "Explicit native user-service management without a daemon"
   homepage "https://github.com/WhiteKiwi/loboot"
-  version "0.1.0"
   license any_of: ["MIT", "Apache-2.0"]
 
   livecheck do

@@ -8,6 +8,7 @@ of the reviewed formula; changes to formula behavior require a normal PR.
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
 import sys
@@ -24,10 +25,20 @@ TARGETS = (
 VERSION = r"(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)"
 MAX_ARCHIVE = 64 * 1024 * 1024
 URL_ROOT = f"https://github.com/{REPOSITORY}/releases/download"
+LATEST_API = f"https://api.github.com/repos/{REPOSITORY}/releases/latest"
+
+
+def request_headers(url):
+    headers = {"User-Agent": "whitekiwi-tap-loboot-updater"}
+    # Use only the job's existing read-scoped token for this exact API request.
+    # Asset downloads never receive it, including their redirect destinations.
+    if url == LATEST_API and os.environ.get("GITHUB_TOKEN"):
+        headers["Authorization"] = "Bearer " + os.environ["GITHUB_TOKEN"]
+    return headers
 
 
 def fetch(url, limit):
-    request = urllib.request.Request(url, headers={"User-Agent": "whitekiwi-tap-loboot-updater"})
+    request = urllib.request.Request(url, headers=request_headers(url))
     with urllib.request.urlopen(request, timeout=120) as response:
         data = response.read(limit + 1)
     if len(data) > limit:
@@ -47,9 +58,22 @@ def current_version(formula):
         raise ValueError("Reviewed formula must contain exactly four matching release URLs")
     version_tuple(versions[0])
     explicit = re.findall(r'^  version "([^"]+)"$', formula, flags=re.MULTILINE)
-    if explicit != [versions[0]]:
+    if explicit and explicit != [versions[0]]:
         raise ValueError("Explicit formula version does not match its release URLs")
     return versions[0]
+
+
+def normalize_formula(formula):
+    """Drop only a matching, redundant version line from the first release.
+
+    Homebrew infers the version from URLs and rejects the redundant stanza.
+    All other formula bytes remain reviewed and must match exactly.
+    """
+    version = current_version(formula)
+    explicit = re.findall(r'^  version "([^"]+)"$', formula, flags=re.MULTILINE)
+    if explicit and version != "0.1.0":
+        raise ValueError("Redundant version compatibility is limited to v0.1.0")
+    return re.sub(r'^  version "0\.1\.0"\n', '', formula, count=1, flags=re.MULTILINE) if explicit else formula
 
 
 def release_assets(release):
@@ -105,6 +129,7 @@ def manifest_hashes(manifest, tag):
 
 
 def render_update(formula, tag, hashes):
+    formula = normalize_formula(formula)
     previous = current_version(formula)
     for target in TARGETS:
         old_url = f"{URL_ROOT}/v{previous}/loboot-v{previous}-{target}.tar.gz"
@@ -113,10 +138,6 @@ def render_update(formula, tag, hashes):
         formula, count = pattern.subn(lambda m: m[1] + new_url + m[2] + hashes[target] + m[3], formula)
         if count != 1:
             raise ValueError(f"Expected one reviewed URL/hash pair for {target}")
-    formula, count = re.subn(r'^  version "' + re.escape(previous) + r'"$',
-                             f'  version "{tag[1:]}"', formula, flags=re.MULTILINE)
-    if count != 1:
-        raise ValueError("Expected one explicit reviewed formula version")
     return formula
 
 
@@ -147,7 +168,7 @@ def verify_release(release, formula, downloader=fetch):
             raise ValueError(f"Archive SHA-256 mismatch: {name}")
     candidate = render_update(formula, tag, hashes)
     published_formula = download("loboot.rb", 1024 * 1024).decode("utf-8")
-    if candidate != published_formula:
+    if candidate != normalize_formula(published_formula):
         raise ValueError("Release changes reviewed formula behavior; open a manual PR")
     return tag, candidate
 
@@ -159,9 +180,9 @@ def main():
     parser.add_argument("--github-output", type=Path)
     args = parser.parse_args()
     formula_bytes = args.formula.read_bytes()
-    formula = formula_bytes.decode("utf-8")
+    formula = normalize_formula(formula_bytes.decode("utf-8"))
     previous = current_version(formula)
-    release = json.loads(fetch(f"https://api.github.com/repos/{REPOSITORY}/releases/latest", 1024 * 1024))
+    release = json.loads(fetch(LATEST_API, 1024 * 1024))
     tag, _ = release_assets(release)
     if version_tuple(tag[1:]) <= version_tuple(previous):
         outputs = {"changed": "false"}

@@ -37,7 +37,7 @@ This tap is kept current automatically and needs no manual version bumps:
 
 - **Release pipelines** — every Pushman CLI and locron release pushes its reviewed Formula with the new version and checksums for all four platform builds (macOS and Linux, x86_64 and arm64).
 - **Autobump** — a [daily workflow](.github/workflows/autobump.yml) runs `brew bump` with `livecheck` against GitHub Releases and opens a pull request if a version falls behind.
-- **Loboot updates** — the same daily workflow checks the latest stable Loboot release at 03:15 UTC (GitHub may delay scheduled runs). It verifies all four archives against the release manifest, checksum file, and GitHub asset digests, then installs, tests, audits, and style-checks the candidate on macOS and Linux before committing it. Changes to formula behavior require a normal PR. Use **Run workflow** with the `main` branch on the [brew bump Actions page](https://github.com/WhiteKiwi/homebrew-tap/actions/workflows/autobump.yml) to check sooner. No cross-repository token is needed.
+- **Loboot updates** — the same daily workflow checks the latest stable Loboot release at 03:15 UTC (GitHub may delay scheduled runs). It verifies all four archives against the release manifest, checksum file, and GitHub asset digests, then installs, tests, audits, and style-checks the candidate on macOS and Linux before committing it. Only versioned URLs and checksums are updated; v0.1.0's redundant explicit version line is removed because Homebrew infers it from the URLs. Other formula changes require a normal PR. Use **Run workflow** with the `main` branch on the [brew bump Actions page](https://github.com/WhiteKiwi/homebrew-tap/actions/workflows/autobump.yml) to check sooner. No cross-repository token is needed.
 - **Test bot** — every push and pull request runs `brew test-bot` on macOS and Linux.
 
 ## Testing
@@ -58,6 +58,10 @@ python3 -m unittest discover -s tests -v
 Loboot's formula tests use an isolated offline root. Installation and tests do not
 start services or touch the current user's service definitions. Loboot itself has
 no daemon, so it has no `brew services` entry.
+
+The published v0.1.0 `loboot.rb` is immutable. The tap formula differs only by
+omitting its redundant `version "0.1.0"` line; all URLs and hashes are unchanged.
+The updater permits this exact compatibility normalization only for v0.1.0.
 
 The Loboot updater validates before writing because commits made with the
 workflow's built-in `GITHUB_TOKEN` do not trigger another push workflow. If an

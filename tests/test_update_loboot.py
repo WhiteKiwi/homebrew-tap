@@ -14,9 +14,9 @@ SPEC.loader.exec_module(updater)
 
 class UpdateLobootTests(unittest.TestCase):
     def setUp(self):
-        self.tag = "v1.2.3"
-        self.formula = 'class Loboot < Formula\n  version "1.2.2"\n' + "".join(
-            f'  url "{updater.URL_ROOT}/v1.2.2/loboot-v1.2.2-{target}.tar.gz"\n'
+        self.tag = "v0.1.0"
+        self.formula = 'class Loboot < Formula\n' + "".join(
+            f'  url "{updater.URL_ROOT}/v0.0.9/loboot-v0.0.9-{target}.tar.gz"\n'
             f'  sha256 "{"0" * 64}"\n' for target in updater.TARGETS
         ) + "end\n"
         self.data = {}
@@ -27,8 +27,8 @@ class UpdateLobootTests(unittest.TestCase):
             self.data[name] = ("fixture " + target).encode()
             digest = hashlib.sha256(self.data[name]).hexdigest()
             hashes[target] = digest
-            artifacts.append({"schema_version": updater.SCHEMA, "version": "1.2.3", "target": target, "archive": name, "sha256": digest})
-        self.manifest = {"schema_version": updater.SCHEMA, "version": "1.2.3", "artifacts": artifacts}
+            artifacts.append({"schema_version": updater.SCHEMA, "version": "0.1.0", "target": target, "archive": name, "sha256": digest})
+        self.manifest = {"schema_version": updater.SCHEMA, "version": "0.1.0", "artifacts": artifacts}
         self.data["manifest.json"] = json.dumps(self.manifest).encode()
         self.data["SHA256SUMS.txt"] = "".join(f"{hashes[target]}  loboot-{self.tag}-{target}.tar.gz\n" for target in updater.TARGETS).encode()
         self.expected = updater.render_update(self.formula, self.tag, hashes)
@@ -49,6 +49,16 @@ class UpdateLobootTests(unittest.TestCase):
         asset = next(a for a in self.release["assets"] if a["name"] == name)
         asset["size"] = len(data)
         asset["digest"] = "sha256:" + hashlib.sha256(data).hexdigest()
+
+    def test_builtin_token_is_only_sent_to_release_api(self):
+        with patch.dict("os.environ", {"GITHUB_TOKEN": "fixture-token"}):
+            self.assertEqual(updater.request_headers(updater.LATEST_API)["Authorization"], "Bearer fixture-token")
+            for url in (updater.URL_ROOT + "/v0.1.0/loboot.rb", "https://example.com/", updater.LATEST_API + "?redirect=1"):
+                self.assertNotIn("Authorization", updater.request_headers(url))
+
+    def test_anonymous_lookup_remains_available(self):
+        with patch.dict("os.environ", {}, clear=True):
+            self.assertNotIn("Authorization", updater.request_headers(updater.LATEST_API))
 
     def test_valid_release(self):
         self.assertEqual(updater.verify_release(self.release, self.formula, self.download), (self.tag, self.expected))
@@ -130,18 +140,36 @@ class UpdateLobootTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "SHA256SUMS"):
             updater.verify_release(self.release, self.formula, self.download)
 
+    def test_matching_redundant_release_version_is_normalized(self):
+        self.mutate_asset("loboot.rb", self.expected.replace("class Loboot < Formula\n", 'class Loboot < Formula\n  version "0.1.0"\n').encode())
+        self.assertEqual(updater.verify_release(self.release, self.formula, self.download), (self.tag, self.expected))
+
+    def test_incorrect_redundant_release_version_is_refused(self):
+        self.mutate_asset("loboot.rb", self.expected.replace("class Loboot < Formula\n", 'class Loboot < Formula\n  version "9.9.9"\n').encode())
+        with self.assertRaisesRegex(ValueError, "Explicit formula version"):
+            updater.verify_release(self.release, self.formula, self.download)
+
+    def test_formula_without_redundant_version(self):
+        formula = self.formula
+        self.assertEqual(updater.verify_release(self.release, formula, self.download), (self.tag, self.expected))
+
+    def test_redundant_future_version_is_not_normalized(self):
+        formula = self.expected.replace("0.1.0", "0.2.0").replace("class Loboot < Formula\n", 'class Loboot < Formula\n  version "0.2.0"\n')
+        with self.assertRaisesRegex(ValueError, "limited to v0.1.0"):
+            updater.normalize_formula(formula)
+
     def test_formula_behavior_changes_refused(self):
         self.mutate_asset("loboot.rb", (self.expected + 'system "unexpected"\n').encode())
         with self.assertRaisesRegex(ValueError, "formula behavior"):
             updater.verify_release(self.release, self.formula, self.download)
 
     def test_formula_mixed_versions_refused(self):
-        formula = self.formula.replace("/v1.2.2/", "/v1.2.1/", 1)
+        formula = self.formula.replace("/v0.0.9/", "/v1.2.1/", 1)
         with self.assertRaises(ValueError):
             updater.current_version(formula)
 
     def test_explicit_formula_version_mismatch(self):
-        formula = self.formula.replace('version "1.2.2"', 'version "1.2.1"')
+        formula = self.formula.replace("class Loboot < Formula\n", 'class Loboot < Formula\n  version "9.9.9"\n')
         with self.assertRaisesRegex(ValueError, "Explicit formula version"):
             updater.current_version(formula)
 
@@ -155,15 +183,15 @@ class UpdateLobootTests(unittest.TestCase):
             verify.assert_called_once()
             self.assertEqual(output.read_text(), self.expected)
             self.assertIn("changed=true\n", metadata.read_text())
-            self.assertIn("tag=v1.2.3\n", metadata.read_text())
+            self.assertIn("tag=v0.1.0\n", metadata.read_text())
             self.assertIn("candidate_sha256=" + hashlib.sha256(self.expected.encode()).hexdigest() + "\n", metadata.read_text())
             self.assertEqual(formula.read_text(), self.formula)
 
     def test_main_never_downgrades(self):
-        for current in ("1.2.3", "2.0.0"):
+        for current in ("0.1.0", "2.0.0"):
             with self.subTest(current=current), tempfile.TemporaryDirectory() as root:
                 formula, output, metadata = (Path(root) / name for name in ("formula.rb", "candidate.rb", "outputs"))
-                formula.write_text(self.formula.replace("1.2.2", current))
+                formula.write_text(self.formula.replace("0.0.9", current))
                 arguments = ["update_loboot.py", "--formula", str(formula), "--output", str(output), "--github-output", str(metadata)]
                 with patch("sys.argv", arguments), patch.object(updater, "fetch", return_value=json.dumps(self.release).encode()), patch.object(updater, "verify_release") as verify:
                     updater.main()
